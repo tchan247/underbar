@@ -538,5 +538,22 @@
   //
   // Note: This is difficult! It may take a while to implement.
   _.throttle = function(func, wait) {
+    var open = true;
+
+    // closure to control func execution frequency
+    return function() {
+      if(open) {
+        func.apply(this, arguments);
+        open = false;
+
+        // cowntdown timer
+        setTimeout(function(){
+          open = true;
+        }, wait);
+      }
+
+      // do nothing if function called again during countdown
+    }
   };
+
 }());
