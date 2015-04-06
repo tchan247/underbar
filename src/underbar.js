@@ -359,15 +359,24 @@
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
 
-  	var arrCopy = array.slice(),
-  	shuffled = [];
+    var len = array.length;
+  	var arrCopy = array.slice();
+  	var shuffled = [];
 
   	while(arrCopy.length > 0) {
   		var rand = Math.floor((Math.random() * arrCopy.length)) - 1;
   		shuffled.push(arrCopy.splice(rand, 1)[0]);
   	}
 
-  	return shuffled;
+    // make sure 'suffled' array dosen't match original array
+    for(var i=0; i<len; i++) {
+      if(shuffled[i] !== array[i]) {
+        return shuffled;
+      }
+    }
+
+    // reshuffle array if arrays still similar
+  	return _.shuffle(array);
   };
 
 
@@ -382,6 +391,20 @@
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
+
+    if(Array.isArray(collection)) {
+      for(var i=0, len=collection.length; i<len; i++) {
+
+        // check if functionOrKey is a method
+        if(collection[i][functionOrKey]) {
+          collection[i] = collection[i][functionOrKey].apply(collection[i], args);
+        } else {
+          collection[i] = functionOrKey.apply(collection[i], args);
+        }
+      }
+    }
+
+    return collection;
   };
 
   // Sort the object's values by a criterion produced by an iterator.
@@ -389,6 +412,38 @@
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
   _.sortBy = function(collection, iterator) {
+    var sorted = [];  
+    var undef = []; // array of undefined elements
+    var isKey = typeof iterator === 'string';
+    
+    // get each elements in collections
+    for(var i=0, len=collection.length; i<len; i++) {
+      var inserted = false;
+      var val1 = isKey?  collection[i][iterator] : iterator(collection[i]);
+
+      // add undefined elements to undef
+      if(val1 === undefined) {
+        undef.push(collection[i]);
+
+      // splice each element into appropriate index
+      } else {
+        for(var j=0, len2 = sorted.length; j<len2 && !inserted; j++) {
+          var val2 = isKey?  sorted[j][iterator] : iterator(sorted[j]);
+
+          if(val1 < val2) {
+            sorted.splice(j, 0, collection[i]);
+            inserted = true;
+          }
+        }
+
+        // add last element
+        if(!inserted) {
+          sorted.push(collection[i]);
+        }
+      }
+    }
+
+    return sorted.concat(undef);
   };
 
   // Zip together two or more arrays with elements of the same index
