@@ -452,6 +452,20 @@
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
   _.zip = function() {
+    var arrays = Array.prototype.slice.call(arguments);
+    //get length of largest array
+    var len = Math.max.apply(null, _.map(arrays, function(arr){return arr.length}));
+    var result = [];
+
+    for(var i=0; i<len; i++) {
+      var container = [];
+      for(var j=0; j<arrays.length; j++) {
+        container.push(arrays[j][i]);
+      }
+      result.push(container);
+    }
+
+    return result;
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
@@ -459,6 +473,18 @@
   //
   // Hint: Use Array.isArray to check if something is an array
   _.flatten = function(nestedArray, result) {
+    var flattened = [];
+
+    if(Array.isArray(nestedArray)) {
+      for(var i=0,len = nestedArray.length; i<len; i++) {
+        // recursively find the elements and add to main flattened array
+        flattened = flattened.concat(_.flatten(nestedArray[i]));
+      }
+    } else {
+      flattened.push(nestedArray);
+    }
+
+    return flattened;
   };
 
   // Takes an arbitrary number of arrays and produces an array that contains
